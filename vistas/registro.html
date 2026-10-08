@@ -1,0 +1,185 @@
+{% extends 'plantilla_base.html' %}
+
+{% block title %}Registro - Biblioteca{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+<div class="register-card-container">
+    <div class="card register-card">
+        <h2 class="text-center login-title">Crear una Cuenta</h2>
+        <p class="text-center text-muted" style="margin: -8px 0 18px; font-size: 0.88rem;">
+            Ingresa tus datos para registrarte en la biblioteca
+        </p>
+
+        <form id="registroForm" action="{{ url_for('auth.register') }}" method="POST" class="book-form">
+            <div class="form-group">
+                <label for="email">Correo Electrónico <span style="font-weight: 500; color: var(--primary-color); font-size: 0.8rem;">(será tu usuario para iniciar sesión)</span></label>
+                <input type="email" id="email" name="email" required autofocus placeholder="Ej. tu_correo@ejemplo.com">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 12px;">
+                <div style="flex: 1;">
+                    <label for="nombres">Nombres</label>
+                    <input type="text" id="nombres" name="nombres" required placeholder="Tus nombres">
+                </div>
+                <div style="flex: 1;">
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" name="apellidos" required placeholder="Tus apellidos">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cedula">Número de Cédula Ecuatoriana (10 dígitos)</label>
+                <input type="text" id="cedula" name="cedula" required 
+                       placeholder="Ej. 1710034065" 
+                       maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
+                       title="Debe ingresar exactamente 10 dígitos numéricos">
+                <div id="cedula-feedback" style="font-size: 0.82rem; margin-top: 5px; display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required placeholder="Crea una contraseña segura" minlength="4">
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Contraseña</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Repite tu contraseña para verificar" minlength="4">
+                <div id="password-feedback" style="font-size: 0.82rem; margin-top: 5px; display: none;"></div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); margin: 16px 0 12px; padding-top: 12px;">
+                <p style="font-size: 0.83rem; color: var(--secondary-color); margin-bottom: 10px; font-weight: 600;">
+                    Recuperación de cuenta:
+                </p>
+                <div class="form-group">
+                    <label for="pregunta_seguridad">Pregunta de Seguridad</label>
+                    <select id="pregunta_seguridad" name="pregunta_seguridad" required>
+                        <option value="">Selecciona una pregunta...</option>
+                        <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
+                        <option value="¿En qué ciudad naciste?">¿En qué ciudad naciste?</option>
+                        <option value="¿Cuál es el nombre de tu mejor amigo de la infancia?">¿Cuál es el nombre de tu mejor amigo de la infancia?</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.5rem;">
+                    <label for="respuesta_seguridad">Respuesta</label>
+                    <input type="text" id="respuesta_seguridad" name="respuesta_seguridad" required placeholder="Tu respuesta secreta">
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmitRegistro" class="btn btn-primary" style="margin-top: 12px; width: 100%; padding: 11px 16px; font-weight: 600; font-size: 0.95rem;">
+                Registrarme
+            </button>
+        </form>
+
+        <p class="text-center text-muted" style="margin: 16px 0 0; font-size: 0.85rem; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+            ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}" style="color: var(--primary-color); font-weight: 600;">Inicia sesión</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    // Algoritmo oficial de validación de cédulas ecuatorianas
+    function validarCedulaEcuatoriana(cedula) {
+        if (!cedula || cedula.length !== 10 || !/^\d+$/.test(cedula)) {
+            return false;
+        }
+        var prov = parseInt(cedula.substring(0, 2), 10);
+        if (!((prov >= 1 && prov <= 24) || prov === 30)) {
+            return false;
+        }
+        var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+        if (tercerDigito >= 6) {
+            return false;
+        }
+        var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+        var suma = 0;
+        for (var i = 0; i < 9; i++) {
+            var prod = parseInt(cedula.charAt(i), 10) * coeficientes[i];
+            if (prod >= 10) prod -= 9;
+            suma += prod;
+        }
+        var digitoVerificador = (suma % 10 === 0) ? 0 : 10 - (suma % 10);
+        return digitoVerificador === parseInt(cedula.charAt(9), 10);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var cedulaInput = document.getElementById('cedula');
+        var cedulaFeedback = document.getElementById('cedula-feedback');
+        var passInput = document.getElementById('password');
+        var confirmPassInput = document.getElementById('confirm_password');
+        var passFeedback = document.getElementById('password-feedback');
+        var form = document.getElementById('registroForm');
+
+        function checkCedula() {
+            var val = cedulaInput.value.replace(/[^0-9]/g, '').slice(0, 10);
+            cedulaInput.value = val;
+            if (val.length === 0) {
+                cedulaFeedback.style.display = 'none';
+                return false;
+            }
+            if (val.length < 10) {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#D97706';
+                cedulaFeedback.innerHTML = 'Ingrese los 10 dígitos de la cédula (' + val.length + '/10)';
+                return false;
+            }
+            if (validarCedulaEcuatoriana(val)) {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#059669';
+                cedulaFeedback.innerHTML = '✓ Cédula ecuatoriana válida';
+                return true;
+            } else {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#DC2626';
+                cedulaFeedback.innerHTML = 'Cédula inválida (dígito verificador o provincia no coincide)';
+                return false;
+            }
+        }
+
+        function checkPasswords() {
+            var p1 = passInput.value;
+            var p2 = confirmPassInput.value;
+            if (p2.length === 0) {
+                passFeedback.style.display = 'none';
+                return true;
+            }
+            if (p1 !== p2) {
+                passFeedback.style.display = 'block';
+                passFeedback.style.color = '#DC2626';
+                passFeedback.innerHTML = 'Las contraseñas no coinciden';
+                return false;
+            } else {
+                passFeedback.style.display = 'block';
+                passFeedback.style.color = '#059669';
+                passFeedback.innerHTML = '✓ Las contraseñas coinciden';
+                return true;
+            }
+        }
+
+        cedulaInput.addEventListener('input', checkCedula);
+        passInput.addEventListener('input', function() {
+            if (confirmPassInput.value.length > 0) checkPasswords();
+        });
+        confirmPassInput.addEventListener('input', checkPasswords);
+
+        form.addEventListener('submit', function(e) {
+            var isCedulaOk = checkCedula();
+            var isPassOk = checkPasswords();
+            if (!isCedulaOk) {
+                e.preventDefault();
+                alert('Por favor ingrese una cédula ecuatoriana válida.');
+                cedulaInput.focus();
+                return;
+            }
+            if (passInput.value !== confirmPassInput.value) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden. Por favor verifique.');
+                confirmPassInput.focus();
+                return;
+            }
+        });
+    });
+</script>
+{% endblock %}

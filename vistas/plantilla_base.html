@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Biblioteca{% endblock %}</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <header class="app-header">
+        <div class="container header-content">
+            <div class="header-brand-wrap">
+                <h1>
+                    <a href="{{ url_for('web.index') }}" class="logo-link">
+                        <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60A5FA;">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <span>Biblioteca Virtual</span>
+                    </a>
+                </h1>
+                {% if session.get('user_id') %}
+                <button type="button" class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Abrir Menú" onclick="toggleMobileNav()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                {% endif %}
+            </div>
+            <nav class="main-nav" id="mainNav">
+                {% if session.get('user_id') %}
+                    <div class="user-greeting" style="display: flex; align-items: center; gap: 8px; margin-right: 6px;">
+                        <span style="color: #E2E8F0; font-size: 0.92rem;">Hola, <strong>{{ current_user_name }}</strong></span>
+                        {% if not is_admin %}
+                            <span class="badge badge-user" style="font-size: 0.72rem; padding: 2px 8px;">
+                                <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                Lector
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if is_admin %}
+                        <a href="{{ url_for('web.admin_dashboard') }}" class="btn-nav-admin">
+                            <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                            Panel Admin
+                        </a>
+                    {% endif %}
+                    <a href="{{ url_for('web.index') }}" class="nav-link">Catálogo</a>
+                    <a href="{{ url_for('web.mi_estanteria') }}" class="nav-link">Mi Estantería</a>
+                    <a href="{{ url_for('web.profile') }}" class="nav-link">Mi Perfil</a>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link nav-logout">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Iniciar Sesión</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-small btn-primary" style="color: white;">Registrarse</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Notificaciones Toast Flotantes (Abajo y auto-cierre) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast-container" id="toastContainer">
+                {% for category, message in messages %}
+                    <div class="toast-msg toast-{{ category }}">
+                        <div style="display: flex; align-items: center; gap: 9px;">
+                            {% if category == 'error' %}
+                                <svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            {% elif category == 'success' %}
+                                <svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            {% else %}
+                                <svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" class="toast-close" onclick="this.closest('.toast-msg').remove()" aria-label="Cerrar">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if session.get('user_id') %}
+    <footer class="app-footer">
+        <div class="container" style="text-align: center;">
+            <p class="footer-copy">Biblioteca Virtual &mdash; &copy; 2026 Todos los derechos reservados.</p>
+        </div>
+    </footer>
+    {% endif %}
+    
+    <script>
+        // Auto-cierre de mensajes toast después de 4 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            var toasts = document.querySelectorAll('.toast-msg');
+            if (toasts.length > 0) {
+                setTimeout(function() {
+                    toasts.forEach(function(toast) {
+                        toast.classList.add('toast-fade-out');
+                        setTimeout(function() {
+                            toast.remove();
+                        }, 400);
+                    });
+                }, 4000);
+            }
+        });
+
+        // Función para abrir/cerrar menú móvil
+        function toggleMobileNav() {
+            var nav = document.getElementById('mainNav');
+            if (nav) nav.classList.toggle('nav-open');
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

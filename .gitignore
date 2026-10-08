@@ -1,0 +1,12 @@
+# Entorno virtual de Python
+venv/
+.venv/
+
+# Archivos compilados temporales
+__pycache__/
+*.pyc
+
+# Certificados y claves SSL/TLS
+*.pem
+*.key
+*.crt

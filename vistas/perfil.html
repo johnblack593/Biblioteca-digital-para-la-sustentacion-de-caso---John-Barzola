@@ -1,0 +1,290 @@
+{% extends 'plantilla_base.html' %}
+
+{% block title %}Mi Perfil - Biblioteca Virtual{% endblock %}
+
+{% block content %}
+<div class="profile-container" style="max-width: 1000px; margin: 0 auto;">
+    
+    <!-- Encabezado / Banner de Perfil -->
+    <div class="card profile-hero-card" style="padding: 35px 30px; margin-bottom: 25px; position: relative; overflow: hidden; background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #3B5BDB 100%); color: white; border: none; box-shadow: var(--shadow-lg);">
+        <div style="display: flex; align-items: center; gap: 25px; flex-wrap: wrap; position: relative; z-index: 2;">
+            <div class="profile-avatar" style="width: 85px; height: 85px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 3px solid rgba(255, 255, 255, 0.85); display: flex; align-items: center; justify-content: center; font-size: 2.4rem; font-weight: 800; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.25);">
+                {{ user.nombres[0] if user.nombres else user.username[0] | upper }}
+            </div>
+            
+            <div style="flex: 1; min-width: 260px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap;">
+                    <h1 style="font-size: 1.9rem; font-weight: 800; margin: 0; color: white; line-height: 1.2;">
+                        {{ user.nombres }} {{ user.apellidos }}
+                    </h1>
+                    {% if user.rol == 'admin' %}
+                        <span class="badge" style="background-color: #FEF3C7; color: #92400E; font-weight: 700; padding: 4px 10px; font-size: 0.82rem; border: 1px solid #FDE68A;">
+                            <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Administrador del Sistema
+                        </span>
+                    {% else %}
+                        <span class="badge" style="background-color: #E0E7FF; color: #3730A3; font-weight: 700; padding: 4px 10px; font-size: 0.82rem; border: 1px solid #C7D2FE;">
+                            <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Lector Registrado
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <p style="opacity: 0.9; margin: 0 0 10px; font-size: 1rem; color: #E2E8F0;">
+                    {{ user.email or user.username }}
+                </p>
+                
+                <div style="display: flex; gap: 20px; font-size: 0.86rem; opacity: 0.9; flex-wrap: wrap; color: #CBD5E1;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+                        Cédula: {{ user.cedula or 'No registrada' }}
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Miembro desde: {{ user.fecha_registro[:10] if user.fecha_registro else 'Reciente' }}
+                    </span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('web.mi_estanteria') }}" class="btn" style="background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); font-weight: 600; padding: 9px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    Mi Estantería
+                </a>
+                {% if user.rol == 'admin' %}
+                <a href="{{ url_for('web.admin_dashboard') }}" class="btn" style="background-color: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); font-weight: 600; padding: 9px 16px;">
+                    Panel Admin
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner directo hacia Mi Estantería -->
+    <div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 16px 22px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background-color: #DBEAFE; color: #1D4ED8; display: flex; align-items: center; justify-content: center;">
+                <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div>
+                <strong style="color: #1E3A8A; font-size: 1rem;">¿Buscas tus libros en lectura o historial?</strong>
+                <p style="margin: 0; color: #3B82F6; font-size: 0.88rem;">
+                    Ahora tus préstamos activos e historial de lecturas se encuentran organizados en <strong>Mi Estantería</strong>.
+                </p>
+            </div>
+        </div>
+        <a href="{{ url_for('web.mi_estanteria') }}" class="btn btn-primary" style="padding: 9px 18px; font-size: 0.9rem; font-weight: 600; white-space: nowrap;">
+            Ir a Mi Estantería &rarr;
+        </a>
+    </div>
+
+    <!-- Métricas Personales -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 30px;">
+        <div class="card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--primary-color);">
+            <div style="width: 46px; height: 46px; border-radius: 10px; background-color: var(--primary-light); color: var(--primary-color); display: flex; align-items: center; justify-content: center;">
+                <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size: 1.7rem; font-weight: 800; color: var(--primary-dark); line-height: 1.1;">{{ stats.activos }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Préstamos Activos</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--success-color);">
+            <div style="width: 46px; height: 46px; border-radius: 10px; background-color: #ECFDF5; color: var(--success-color); display: flex; align-items: center; justify-content: center;">
+                <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size: 1.7rem; font-weight: 800; color: var(--success-color); line-height: 1.1;">{{ stats.devueltos }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Libros Leídos</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid #F59E0B;">
+            <div style="width: 46px; height: 46px; border-radius: 10px; background-color: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center;">
+                <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+                <div style="font-size: 1.7rem; font-weight: 800; color: #B45309; line-height: 1.1;">{{ stats.resenas }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Reseñas Publicadas</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--secondary-color);">
+            <div style="width: 46px; height: 46px; border-radius: 10px; background-color: #F1F5F9; color: var(--secondary-color); display: flex; align-items: center; justify-content: center;">
+                <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-color); line-height: 1.2;">
+                    {{ user.cedula or 'Sin Cédula' }}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Identificación</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formularios de Configuración y Seguridad -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px;">
+        
+        <!-- Tarjeta 1: Actualizar Datos Personales -->
+        <div class="card" style="margin: 0; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 1.25rem; color: var(--primary-dark); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Datos Personales
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Actualiza tu información y número de cédula en el sistema.</p>
+            
+            <form id="perfilDatosForm" action="{{ url_for('web.profile_update') }}" method="POST">
+                <div class="form-group">
+                    <label for="nombres">Nombres</label>
+                    <input type="text" id="nombres" name="nombres" value="{{ user.nombres or '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" id="apellidos" name="apellidos" value="{{ user.apellidos or '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cedula">Cédula de Identidad Ecuatoriana (10 dígitos)</label>
+                    <input type="text" id="cedula" name="cedula" value="{{ user.cedula or '' }}" 
+                           placeholder="Ej. 1710034065"
+                           maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
+                           title="Debe ingresar exactamente 10 dígitos numéricos válidos">
+                    <div id="cedula-feedback-perfil" style="font-size: 0.8rem; margin-top: 5px; display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo Electrónico (Usuario de Acceso)</label>
+                    <input type="email" id="email" name="email" value="{{ user.email or user.username or '' }}" required placeholder="usuario@correo.com">
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-weight: 600;">
+                        Guardar Cambios de Perfil
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tarjeta 2: Cambiar Contraseña -->
+        <div class="card" style="margin: 0; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 1.25rem; color: var(--primary-dark); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Seguridad y Contraseña
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Protege tu cuenta actualizando periódicamente tu clave.</p>
+            
+            <form action="{{ url_for('web.profile_change_password') }}" method="POST">
+                <div class="form-group">
+                    <label for="clave_actual">Contraseña Actual *</label>
+                    <input type="password" id="clave_actual" name="clave_actual" required placeholder="Tu clave actual">
+                </div>
+
+                <div class="form-group">
+                    <label for="nueva_clave">Nueva Contraseña *</label>
+                    <input type="password" id="nueva_clave" name="nueva_clave" required placeholder="Mínimo 4 caracteres" minlength="4">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar_clave">Confirmar Nueva Contraseña *</label>
+                    <input type="password" id="confirmar_clave" name="confirmar_clave" required placeholder="Repite la nueva contraseña" minlength="4">
+                </div>
+
+                <div style="background-color: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted);">
+                    <strong>Pregunta de Seguridad configurada:</strong><br>
+                    <em>{{ user.pregunta_seguridad or 'Sin pregunta configurada' }}</em>
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="btn btn-secondary" style="width: 100%; font-weight: 600;">
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // Algoritmo oficial de validación de cédulas ecuatorianas
+    function validarCedulaEcuatoriana(cedula) {
+        if (!cedula || cedula.length !== 10 || !/^\d+$/.test(cedula)) {
+            return false;
+        }
+        var prov = parseInt(cedula.substring(0, 2), 10);
+        if (!((prov >= 1 && prov <= 24) || prov === 30)) {
+            return false;
+        }
+        var tercerDigito = parseInt(cedula.substring(2, 3), 10);
+        if (tercerDigito >= 6) {
+            return false;
+        }
+        var coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+        var suma = 0;
+        for (var i = 0; i < 9; i++) {
+            var prod = parseInt(cedula.charAt(i), 10) * coeficientes[i];
+            if (prod >= 10) prod -= 9;
+            suma += prod;
+        }
+        var digitoVerificador = (suma % 10 === 0) ? 0 : 10 - (suma % 10);
+        return digitoVerificador === parseInt(cedula.charAt(9), 10);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var cedulaInput = document.getElementById('cedula');
+        var cedulaFeedback = document.getElementById('cedula-feedback-perfil');
+        var form = document.getElementById('perfilDatosForm');
+
+        function checkCedula() {
+            var val = cedulaInput.value.replace(/[^0-9]/g, '').slice(0, 10);
+            cedulaInput.value = val;
+            if (val.length === 0) {
+                cedulaFeedback.style.display = 'none';
+                return true;
+            }
+            if (val.length < 10) {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#D97706';
+                cedulaFeedback.innerHTML = '⚠️ Ingrese 10 dígitos numéricos (' + val.length + '/10)';
+                return false;
+            }
+            if (validarCedulaEcuatoriana(val)) {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#059669';
+                cedulaFeedback.innerHTML = '✓ Cédula ecuatoriana válida';
+                return true;
+            } else {
+                cedulaFeedback.style.display = 'block';
+                cedulaFeedback.style.color = '#DC2626';
+                cedulaFeedback.innerHTML = '✗ Cédula inválida (dígito verificador ecuatoriano no coincide)';
+                return false;
+            }
+        }
+
+        cedulaInput.addEventListener('input', checkCedula);
+
+        form.addEventListener('submit', function(e) {
+            if (cedulaInput.value.trim().length > 0 && !checkCedula()) {
+                e.preventDefault();
+                alert('La cédula ingresada no es válida según el registro civil ecuatoriano.');
+                cedulaInput.focus();
+            }
+        });
+    });
+</script>
+{% endblock %}

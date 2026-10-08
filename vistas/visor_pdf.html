@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lectura: {{ book.titulo }} - Biblioteca Virtual</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0F172A;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .reader-navbar {
+            height: 64px;
+            background: linear-gradient(90deg, #0F172A, #1E293B);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 100;
+        }
+
+        .reader-title-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            overflow: hidden;
+        }
+
+        .reader-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 480px;
+            color: #F8FAFC;
+        }
+
+        .reader-author {
+            font-size: 0.85rem;
+            color: #94A3B8;
+            white-space: nowrap;
+        }
+
+        .reader-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-reader {
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #F1F5F9;
+        }
+
+        .btn-reader:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-reader-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-reader-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .reader-container {
+            width: 100%;
+            height: calc(100vh - 64px);
+            background-color: #334155;
+            position: relative;
+        }
+
+        .pdf-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #525659;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior del Lector Integrado -->
+    <header class="reader-navbar">
+        <div class="reader-title-box">
+            <a href="javascript:history.back()" class="btn-reader" title="Regresar a la pantalla anterior">
+                &larr; Volver
+            </a>
+            <div>
+                <div class="reader-title">{{ book.titulo }}</div>
+                <div class="reader-author">Autor: {{ book.autor }} &bull; Género: {{ book.genero }} ({{ book.anio }})</div>
+            </div>
+        </div>
+
+        <div class="reader-actions">
+            <button type="button" class="btn-reader" onclick="toggleFullscreen()" title="Pantalla Completa">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                Pantalla Completa
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenedor del Documento PDF con Toolbar Oculto -->
+    <main class="reader-container" id="readerContainer" oncontextmenu="return false;">
+        <iframe 
+            id="pdfFrame"
+            src="{{ url_for('web.servir_pdf', filename=book.pdf_path) }}#toolbar=0&navpanes=0&scrollbar=1&view=FitH" 
+            class="pdf-frame" 
+            title="Lector de PDF para {{ book.titulo }}">
+            <p>Tu navegador no soporta marcos interactivos para PDF.</p>
+        </iframe>
+    </main>
+
+    <script>
+        function toggleFullscreen() {
+            var elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Bloquear clic derecho y atajos de teclado para guardar/imprimir (Ctrl+S / Ctrl+P)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1819 @@
+{% extends 'plantilla_base.html' %}
+
+{% block title %}Panel de Administración - Biblioteca{% endblock %}
+
+{% block content %}
+<!-- Cabecera del Panel Administrativo -->
+<div class="admin-header" style="margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h1 style="font-size: 1.95rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+                <svg class="icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color);">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Panel de Administración
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Control centralizado de catálogo, centro de monitoreo de préstamos y gestión avanzada de usuarios.
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <a href="{{ url_for('web.index') }}" class="admin-action-btn btn-admin-catalog" title="Ir al catálogo público de libros">
+                <span class="btn-icon-pod">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </span>
+                <span>Ver Catálogo</span>
+            </a>
+            <button class="admin-action-btn btn-admin-success" onclick="openCreateUserModal()" title="Registrar un nuevo lector o administrador">
+                <span class="btn-icon-pod">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                </span>
+                <span>Crear Usuario</span>
+            </button>
+            <button class="admin-action-btn btn-admin-primary" onclick="openAdminAddModal()" title="Registrar un nuevo ejemplar en el catálogo">
+                <span class="btn-icon-pod">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+                <span>Añadir Libro</span>
+            </button>
+            <button type="button" class="admin-action-btn btn-admin-settings" onclick="showAdminTab('tab-configuracion', document.getElementById('tabBtnConfiguracion'))" title="Configurar límites de préstamo y días de mora">
+                <span class="btn-icon-pod">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </span>
+                <span>Políticas de Préstamo</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tarjetas de Métricas Rápidas (KPIs) -->
+<div class="kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 25px;">
+    <div class="card kpi-card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--primary-color);">
+        <div class="kpi-icon-box" style="background-color: var(--primary-light); color: var(--primary-color);">
+            <svg class="icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Libros en Catálogo</div>
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-color); line-height: 1.1;">{{ metricas.total_libros }}</div>
+        </div>
+    </div>
+
+    <div class="card kpi-card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--warning-color);">
+        <div class="kpi-icon-box" style="background-color: #FEF3C7; color: var(--warning-color);">
+            <svg class="icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Préstamos Activos</div>
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-color); line-height: 1.1;">{{ metricas.total_prestamos_activos }}</div>
+        </div>
+    </div>
+
+    <div class="card kpi-card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--success-color);">
+        <div class="kpi-icon-box" style="background-color: #ECFDF5; color: var(--success-color);">
+            <svg class="icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Total Histórico</div>
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-color); line-height: 1.1;">{{ metricas.total_prestamos_historico }}</div>
+        </div>
+    </div>
+
+    <div class="card kpi-card" style="margin: 0; padding: 20px; display: flex; align-items: center; gap: 16px; border-left: 4px solid var(--accent-color);">
+        <div class="kpi-icon-box" style="background-color: #EEF2FF; color: var(--accent-color);">
+            <svg class="icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </div>
+        <div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Usuarios Registrados</div>
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-color); line-height: 1.1;">{{ metricas.total_usuarios }}</div>
+            <small style="font-size: 0.75rem; color: var(--text-muted);">{{ metricas.total_lectores }} Lectores | {{ metricas.total_admins }} Admins</small>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de Pestañas de Navegación del Administrador -->
+<div class="admin-tabs" style="display: flex; gap: 10px; border-bottom: 2px solid var(--border-color); margin-bottom: 25px;">
+    <button class="tab-btn active" onclick="showAdminTab('tab-libros', this)">
+        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Gestión de Catálogo ({{ books|length }})
+    </button>
+    <button class="tab-btn" onclick="showAdminTab('tab-prestamos', this)">
+        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Control de Préstamos ({{ prestamos|length }})
+    </button>
+    <button class="tab-btn" onclick="showAdminTab('tab-usuarios', this)">
+        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Gestión de Usuarios ({{ users|length }})
+    </button>
+    <button class="tab-btn" id="tabBtnConfiguracion" onclick="showAdminTab('tab-configuracion', this)">
+        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Políticas de Préstamo ({{ limite_libros }} libros / {{ dias_plazo }}d)
+    </button>
+</div>
+
+<!-- =========================================================================
+     PESTAÑA 1: GESTIÓN DE CATÁLOGO (CON PAGINACIÓN, BÚSQUEDA Y ORDENACIÓN)
+     ========================================================================= -->
+<div id="tab-libros" class="admin-tab-pane">
+    <div class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <!-- Barra de Herramientas y Filtros -->
+        <div class="admin-toolbar-card">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1;">
+                <div class="search-input-wrapper">
+                    <svg class="icon-svg search-icon-inside" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchBooksInput" placeholder="Buscar libro por título, autor, género..." oninput="filterBooksTable()">
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label for="sortBooksSelect" style="font-size: 0.84rem; font-weight: 600; color: var(--text-muted); margin: 0;">Ordenar por:</label>
+                    <select id="sortBooksSelect" onchange="sortBooksByDropdown()" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; background: white;">
+                        <option value="id_desc">Más recientes añadidos (ID ▼)</option>
+                        <option value="id_asc">Más antiguos añadidos (ID ▲)</option>
+                        <option value="titulo_asc">Título (A → Z)</option>
+                        <option value="titulo_desc">Título (Z → A)</option>
+                        <option value="autor_asc">Autor (A → Z)</option>
+                        <option value="prestamos_desc">Más Préstamos Activos</option>
+                    </select>
+                </div>
+            </div>
+            <button class="admin-action-btn btn-admin-primary" onclick="openAdminAddModal()" style="padding: 7px 14px; font-size: 0.84rem;">
+                <span class="btn-icon-pod" style="width: 20px; height: 20px;">
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+                <span>Añadir Nuevo Libro</span>
+            </button>
+        </div>
+
+        <!-- Tabla de Libros -->
+        <div class="table-responsive" style="margin: 0; border: none;">
+            <table id="booksTable" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #F8FAFC; border-bottom: 1px solid var(--border-color);">
+                        <th style="width: 70px; text-align: center;">Portada</th>
+                        <th class="sortable-th" onclick="sortBooksByCol(1)" title="Clic para ordenar por Título">
+                            Título y Autor <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortBooksByCol(2)" title="Clic para ordenar por Género">
+                            Género <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortBooksByCol(3)" title="Clic para ordenar por Año">
+                            Edición / Año <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortBooksByCol(4)" title="Clic para ordenar por Préstamos">
+                            Préstamos <span class="sort-icon">⇅</span>
+                        </th>
+                        <th>Lectura Integrada</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody">
+                    {% for book in books %}
+                    <tr class="book-row"
+                        data-id="{{ book.id }}"
+                        data-titulo="{{ book.titulo|lower }}"
+                        data-autor="{{ (book.autor or '')|lower }}"
+                        data-genero="{{ (book.genero or '')|lower }}"
+                        data-anio="{{ book.anio or 0 }}"
+                        data-prestamos="{{ book.prestamos_activos }}"
+                        style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="text-align: center;">
+                            {% if book.portada_path %}
+                                <img src="{{ url_for('static', filename='portadas/' + book.portada_path) }}" alt="Portada" style="width: 46px; height: 64px; object-fit: cover; border-radius: 4px; box-shadow: var(--shadow-sm);">
+                            {% else %}
+                                <div style="width: 46px; height: 64px; background-color: #E2E8F0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #94A3B8; margin: 0 auto;">
+                                    <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong style="color: var(--primary-dark); font-size: 0.98rem;">
+                                <a href="{{ url_for('web.book_detail', id=book.id) }}">{{ book.titulo }}</a>
+                            </strong>
+                            <div style="font-size: 0.83rem; color: var(--text-muted); margin-top: 2px;">{{ book.autor or 'Autor no asignado' }}</div>
+                        </td>
+                        <td><span class="badge">{{ book.genero or 'General' }}</span></td>
+                        <td>
+                            <div style="font-size: 0.88rem; font-weight: 500;">{{ book.edicion or 'Estándar' }}</div>
+                            <small class="text-muted">Año: {{ book.anio }}</small>
+                        </td>
+                        <td>
+                            <span class="badge {% if book.prestamos_activos > 0 %}badge-warning-subtle{% else %}badge-neutral-subtle{% endif %}">
+                                {{ book.prestamos_activos }} activo(s) / {{ book.prestamos_totales }} total
+                            </span>
+                        </td>
+                        <td>
+                            {% if book.pdf_path %}
+                                <a href="{{ url_for('web.visor_lectura', id=book.id) }}" class="badge" style="background-color: var(--primary-light); color: var(--primary-color); text-decoration: none;">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                    Abrir Lector
+                                </a>
+                            {% else %}
+                                <span class="text-muted" style="font-size: 0.82rem;">Solo Físico</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                <button class="btn btn-small btn-secondary" onclick="openAdminEditModal(this)"
+                                        data-id="{{ book.id }}"
+                                        data-titulo="{{ book.titulo }}"
+                                        data-autor="{{ book.autor }}"
+                                        data-genero="{{ book.genero }}"
+                                        data-anio="{{ book.anio }}"
+                                        data-edicion="{{ book.edicion }}"
+                                        data-resumen="{{ book.resumen }}"
+                                        data-pdf="{{ book.pdf_path or '' }}"
+                                        data-portada="{{ book.portada_path or '' }}"
+                                        title="Editar libro">
+                                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    Editar
+                                </button>
+                                <button type="button" class="btn btn-small btn-danger"
+                                        onclick="openDeleteModal(this)"
+                                        data-action="{{ url_for('web.delete_book', id=book.id) }}"
+                                        data-title="el libro «{{ book.titulo }}»"
+                                        title="Eliminar libro">
+                                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                            No hay libros registrados en el inventario.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginador de Libros -->
+        <div id="booksPaginationBar" style="padding: 16px 20px; background: #FAFAFC; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div id="booksInfoLabel" style="font-size: 0.86rem; color: var(--text-muted); font-weight: 500;">
+                Mostrando 1 a 10 de {{ books|length }} libros
+            </div>
+            <div id="booksPaginationControls" class="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
+                <!-- Botones generados dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     PESTAÑA 2: CONTROL GLOBAL DE PRÉSTAMOS Y CENTRO DE MONITOREO
+     ========================================================================= -->
+<div id="tab-prestamos" class="admin-tab-pane" style="display: none;">
+
+    <!-- WIDGET DE MONITOREO Y CONTROL: USUARIOS CON MÁS LIBROS & ALERTAS DE MORA -->
+    <div class="monitoring-grid">
+        <!-- Tarjeta 1: Lectores con más libros en préstamo activo -->
+        <div class="monitoring-card">
+            <div class="monitoring-header">
+                <h4 class="monitoring-title">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Top Lectores con Más Libros Activos
+                </h4>
+                <span class="badge badge-neutral-subtle" style="font-size: 0.72rem;">Límite: Máx {{ limite_libros }}</span>
+            </div>
+            <div class="monitoring-body">
+                {% if usuarios_top_prestamos %}
+                    {% for u in usuarios_top_prestamos %}
+                    <div class="ranking-item">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="ranking-position top-{{ loop.index }}">
+                                {{ loop.index }}
+                            </div>
+                            <div>
+                                <div style="font-size: 0.88rem; font-weight: 700; color: var(--primary-dark);">
+                                    {{ u.nombres or '' }} {{ u.apellidos or '' }}
+                                    {% if not u.nombres and not u.apellidos %}@{{ u.username }}{% endif %}
+                                </div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                                    @{{ u.username }} · {{ u.cedula or 'Sin Cédula' }}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge {% if u.libros_prestados >= limite_libros %}badge-danger-subtle{% else %}badge-warning-subtle{% endif %}" style="font-weight: 700;">
+                                {{ u.libros_prestados }} / {{ limite_libros }} libros
+                            </span>
+                            {% if u.libros_prestados >= limite_libros %}
+                                <div style="font-size: 0.72rem; color: var(--danger-color); margin-top: 2px;">
+                                    Límite alcanzado
+                                </div>
+                            {% else %}
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                                    Capacidad disponible
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 25px 15px; color: var(--text-muted); font-size: 0.88rem;">
+                        No existen lectores con préstamos activos en este momento.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tarjeta 2: Alertas de Mora (Préstamos con más tiempo transcurrido sin devolver) -->
+        <div class="monitoring-card">
+            <div class="monitoring-header">
+                <h4 class="monitoring-title" style="color: #92400E;">
+                    <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Mayor Tiempo sin Devolver (Alertas de Mora)
+                </h4>
+                <span class="badge badge-warning-subtle" style="font-size: 0.72rem;">Atención Requerida</span>
+            </div>
+            <div class="monitoring-body">
+                {% if prestamos_mora %}
+                    {% for pm in prestamos_mora %}
+                    <div class="ranking-item">
+                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                            {% if pm.portada_path %}
+                                <img src="{{ url_for('static', filename='portadas/' + pm.portada_path) }}" alt="Portada" style="width: 30px; height: 42px; object-fit: cover; border-radius: 3px; flex-shrink: 0;">
+                            {% else %}
+                                <div style="width: 30px; height: 42px; background: #E2E8F0; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #94A3B8; flex-shrink: 0;">
+                                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg>
+                                </div>
+                            {% endif %}
+                            <div style="min-width: 0;">
+                                <div style="font-size: 0.88rem; font-weight: 700; color: var(--primary-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    {{ pm.libro_titulo }}
+                                </div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                                    Lector: <strong>@{{ pm.username }}</strong> · Prestado: {{ pm.fecha_prestamo[:10] }}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; flex-shrink: 0;">
+                            {% if pm.dias_transcurridos >= dias_plazo %}
+                                <span class="badge" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; font-weight: 700;">
+                                    {{ pm.dias_transcurridos }} días (Mora: excedió {{ dias_plazo }}d)
+                                </span>
+                            {% elif pm.dias_transcurridos >= (dias_plazo // 2) %}
+                                <span class="badge" style="background:#FEF3C7; color:#B45309; border:1px solid #FCD34D; font-weight: 600;">
+                                    {{ pm.dias_transcurridos }} días en préstamo
+                                </span>
+                            {% else %}
+                                <span class="badge" style="background:#EEF2FF; color:#4338CA; border:1px solid #C7D2FE;">
+                                    {{ pm.dias_transcurridos }} días
+                                </span>
+                            {% endif %}
+                            <form action="{{ url_for('web.admin_devolver_prestamo', id=pm.id) }}" method="POST" style="margin-top: 4px;">
+                                <button type="submit" class="btn btn-small btn-secondary" style="font-size: 0.72rem; padding: 2px 7px;">
+                                    Registrar Devolución
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 25px 15px; color: var(--text-muted); font-size: 0.88rem;">
+                        No existen préstamos con atraso o mora pendientes.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA PRINCIPAL DE PRÉSTAMOS CON ORDENAMIENTO PERSONALIZADO Y PAGINACIÓN -->
+    <div class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <!-- Barra de Controles y Ordenamiento de Préstamos -->
+        <div class="admin-toolbar-card">
+            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1;">
+                <div class="search-input-wrapper">
+                    <svg class="icon-svg search-icon-inside" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchLoansInput" placeholder="Buscar por libro, lector, cédula, estado..." oninput="filterLoansTable()">
+                </div>
+                <!-- Selector de Ordenamiento Personalizado (Req 6) -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label for="sortLoansSelect" style="font-size: 0.84rem; font-weight: 600; color: var(--text-muted); margin: 0;">Ordenar préstamos:</label>
+                    <select id="sortLoansSelect" onchange="sortLoansByDropdown()" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; background: white;">
+                        <option value="prestamo_desc">Fecha de Préstamo (Más reciente primero)</option>
+                        <option value="prestamo_asc">Fecha de Préstamo (Más antigua primero)</option>
+                        <option value="devolucion_desc">Fecha de Devolución (Más reciente primero)</option>
+                        <option value="devolucion_asc">Fecha de Devolución (Más antigua primero)</option>
+                        <option value="libro_asc">Título del Libro (A → Z)</option>
+                        <option value="usuario_asc">Nombre del Lector (A → Z)</option>
+                        <option value="estado_activo">Estado (Activos primero)</option>
+                    </select>
+                </div>
+                <!-- Filtro por Estado -->
+                <select id="filterLoansStatusSelect" onchange="filterLoansTable()" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.85rem; background: white;">
+                    <option value="">Todos los Estados</option>
+                    <option value="Activo">Solo Activos</option>
+                    <option value="Devuelto">Solo Devueltos</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="margin: 0; border: none;">
+            <table id="loansTable" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #F8FAFC; border-bottom: 1px solid var(--border-color);">
+                        <th class="sortable-th" onclick="sortLoansByCol(0)" style="width: 65px;" title="Ordenar por ID">
+                            ID <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(1)" title="Ordenar por Libro">
+                            Libro <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(2)" title="Ordenar por Usuario">
+                            Usuario / Lector <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(3)" title="Ordenar por Cédula">
+                            Cédula <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(4)" title="Ordenar por Fecha Préstamo">
+                            Fecha Préstamo <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(5)" title="Ordenar por Fecha Devolución">
+                            Fecha Devolución <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortLoansByCol(6)" style="text-align: center;" title="Ordenar por Estado">
+                            Estado <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="text-align: right;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="loansTableBody">
+                    {% for p in prestamos %}
+                    <tr class="loan-row"
+                        data-id="{{ p.id }}"
+                        data-libro="{{ p.libro_titulo|lower }}"
+                        data-usuario="{{ (p.nombres or '')|lower }} {{ (p.apellidos or '')|lower }} {{ p.username|lower }}"
+                        data-cedula="{{ p.cedula or '' }}"
+                        data-fecha-prestamo="{{ p.fecha_prestamo or '' }}"
+                        data-fecha-devolucion="{{ p.fecha_devolucion or '' }}"
+                        data-estado="{{ p.estado }}"
+                        style="border-bottom: 1px solid #F1F5F9;">
+                        <td style="font-weight: 700; color: var(--text-muted);">#{{ p.id }}</td>
+                        <td>
+                            <strong style="color: var(--primary-dark); font-size: 0.95rem;">{{ p.libro_titulo }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;">{{ p.nombres or '' }} {{ p.apellidos or '' }}</div>
+                            <small class="text-muted">@{{ p.username }} ({{ p.email }})</small>
+                        </td>
+                        <td><code style="background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;">{{ p.cedula or 'No registrada' }}</code></td>
+                        <td><small style="color: var(--text-color); font-weight: 500;">{{ p.fecha_prestamo }}</small></td>
+                        <td>
+                            {% if p.fecha_devolucion %}
+                                <small style="color: var(--success-color); font-weight: 600;">{{ p.fecha_devolucion }}</small>
+                            {% else %}
+                                <small style="color: var(--text-muted);">— (En Préstamo)</small>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if p.estado == 'Activo' %}
+                                <span class="badge" style="background-color: #FEF3C7; color: #B45309; border: 1px solid #FCD34D;">Activo</span>
+                            {% else %}
+                                <span class="badge" style="background-color: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0;">Devuelto</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            {% if p.estado == 'Activo' %}
+                                <form action="{{ url_for('web.admin_devolver_prestamo', id=p.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-small btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;">
+                                        Registrar Entrega
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">Completado</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: 40px; color: var(--text-muted);">
+                            No hay registros de préstamos en el sistema.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginador de Préstamos -->
+        <div id="loansPaginationBar" style="padding: 16px 20px; background: #FAFAFC; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div id="loansInfoLabel" style="font-size: 0.86rem; color: var(--text-muted); font-weight: 500;">
+                Mostrando 1 a 10 de {{ prestamos|length }} préstamos
+            </div>
+            <div id="loansPaginationControls" class="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
+                <!-- Botones generados dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     PESTAÑA 3: GESTIÓN DE USUARIOS Y ACCESOS (CON PAGINACIÓN, MODAL ROL & ELIMINAR)
+     ========================================================================= -->
+<div id="tab-usuarios" class="admin-tab-pane" style="display: none;">
+    <div class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <!-- Barra de Herramientas de Usuarios Pulida y Adaptable -->
+        <div class="admin-toolbar-card" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; min-width: 0;">
+                <div class="search-input-wrapper" style="min-width: 180px; max-width: 270px; flex: 1;">
+                    <svg class="icon-svg search-icon-inside" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchUsersInput" placeholder="Buscar usuario, cédula o correo..." oninput="filterUsersTable()" style="padding: 7px 10px 7px 34px; font-size: 0.85rem;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="filterUsersRoleSelect" style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin: 0; white-space: nowrap;">Rol:</label>
+                    <select id="filterUsersRoleSelect" onchange="filterUsersTable()" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.84rem; background: white; color: var(--text-color); font-weight: 500;">
+                        <option value="">Todos los Roles</option>
+                        <option value="admin">Solo Administradores</option>
+                        <option value="usuario">Solo Lectores</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="sortUsersSelect" style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin: 0; white-space: nowrap;">Ordenar:</label>
+                    <select id="sortUsersSelect" onchange="sortUsersByDropdown()" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.84rem; background: white; color: var(--text-color);">
+                        <option value="id_asc">ID Ascendente (Más antiguos)</option>
+                        <option value="id_desc">ID Descendente (Más recientes)</option>
+                        <option value="nombre_asc">Nombre (A → Z)</option>
+                        <option value="prestamos_desc">Más Préstamos Activos</option>
+                    </select>
+                </div>
+            </div>
+            <button class="admin-action-btn btn-admin-success" onclick="openCreateUserModal()" style="padding: 7px 14px; font-size: 0.84rem; flex-shrink: 0;">
+                <span class="btn-icon-pod" style="width: 20px; height: 20px;">
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+                <span>Crear Nuevo Usuario</span>
+            </button>
+        </div>
+
+        <div class="table-responsive" style="margin: 0; border: none; width: 100%; overflow-x: auto;">
+            <table id="usersTable" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #F8FAFC; border-bottom: 1px solid var(--border-color);">
+                        <th class="sortable-th" onclick="sortUsersByCol(0)" style="width: 25%; text-align: left;" title="Ordenar por Nombre">
+                            Usuario <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortUsersByCol(1)" style="width: 21%; text-align: left;" title="Ordenar por Cédula">
+                            Identificación <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortUsersByCol(2)" style="width: 13%; text-align: center;" title="Ordenar por Rol">
+                            Rol <span class="sort-icon">⇅</span>
+                        </th>
+                        <th class="sortable-th" onclick="sortUsersByCol(3)" style="width: 15%; text-align: left;" title="Ordenar por Préstamos">
+                            Préstamos <span class="sort-icon">⇅</span>
+                        </th>
+                        <th style="width: 26%; text-align: right; white-space: nowrap;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for u in users %}
+                    <tr class="user-row"
+                        data-id="{{ u.id }}"
+                        data-username="{{ u.username|lower }}"
+                        data-nombre="{{ (u.nombres or '')|lower }} {{ (u.apellidos or '')|lower }}"
+                        data-cedula="{{ u.cedula or '' }}"
+                        data-email="{{ (u.email or '')|lower }}"
+                        data-rol="{{ u.rol }}"
+                        data-prestamos="{{ u.prestamos_activos }}"
+                        style="border-bottom: 1px solid #F1F5F9;">
+                        <!-- Columna 1: Usuario e Identidad -->
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 9px; min-width: 0;">
+                                <div class="user-avatar-circle {% if u.rol == 'admin' %}avatar-admin{% else %}avatar-user{% endif %}" style="width: 32px; height: 32px; font-size: 0.82rem; flex-shrink: 0;">
+                                    {{ u.nombres[0] if u.nombres else u.username[0] | upper }}
+                                </div>
+                                <div style="min-width: 0;">
+                                    <div class="user-name-title" style="font-weight: 700; color: var(--primary-dark); font-size: 0.88rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;" title="{{ u.nombres or '' }} {{ u.apellidos or '' }}">
+                                        {{ u.nombres or '' }} {{ u.apellidos or '' }}{% if not u.nombres and not u.apellidos %}@{{ u.username }}{% endif %}
+                                    </div>
+                                    <div class="user-subtitle" style="display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 0.74rem;">
+                                        <span style="font-weight: 500; color: var(--text-muted);">@{{ u.username }}</span>
+                                        <span class="badge badge-neutral-subtle" style="font-size: 0.66rem; padding: 1px 4px; font-weight: 600;">ID #{{ u.id }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Columna 2: Identificación y Contacto -->
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                                <div class="user-contact-item" style="display: flex; align-items: center; gap: 5px; font-family: monospace; font-size: 0.82rem; font-weight: 600; color: var(--text-color);">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="13" y2="12"/></svg>
+                                    <span>{{ u.cedula or 'Sin Cédula' }}</span>
+                                </div>
+                                <div class="user-contact-email" style="display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--text-muted); min-width: 0;" title="{{ u.email or 'Sin correo registrado' }}">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px;">{{ u.email or 'Sin correo registrado' }}</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Columna 3: Rol de Acceso -->
+                        <td style="text-align: center;">
+                            {% if u.rol == 'admin' %}
+                                <span class="badge badge-admin" style="font-size: 0.75rem; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Administrador
+                                </span>
+                            {% else %}
+                                <span class="badge badge-user" style="font-size: 0.75rem; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg class="icon-svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Lector
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Columna 4: Actividad en Biblioteca -->
+                        <td>
+                            <div>
+                                {% if u.prestamos_activos > 0 %}
+                                    <span class="badge badge-prestamos-activos" style="font-size: 0.74rem; padding: 2px 7px;">
+                                        {{ u.prestamos_activos }} activo(s)
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted" style="font-size: 0.78rem; font-weight: 500;">Sin préstamos</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                                Alta: {{ u.fecha_registro[:10] if u.fecha_registro else '—' }}
+                            </div>
+                        </td>
+
+                        <!-- Columna 5: Acciones Administrativas Pulidas -->
+                        <td style="text-align: right; white-space: nowrap;">
+                            <div style="display: flex; gap: 4px; justify-content: flex-end; align-items: center; flex-wrap: nowrap;">
+                                <!-- Editar Perfil -->
+                                <button class="btn btn-small btn-secondary btn-user-action" onclick="openEditUserModal(this)"
+                                        data-id="{{ u.id }}"
+                                        data-username="{{ u.username }}"
+                                        data-nombres="{{ u.nombres or '' }}"
+                                        data-apellidos="{{ u.apellidos or '' }}"
+                                        data-cedula="{{ u.cedula or '' }}"
+                                        data-email="{{ u.email or '' }}"
+                                        data-rol="{{ u.rol }}"
+                                        title="Editar datos de este perfil">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    <span>Editar</span>
+                                </button>
+
+                                <!-- Restablecer Clave -->
+                                <button class="btn btn-small btn-secondary btn-user-action" onclick="openResetPassModal(this)"
+                                        data-id="{{ u.id }}"
+                                        data-username="{{ u.username }}"
+                                        title="Restablecer contraseña">
+                                    <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9 3 14a4.24 4.24 0 0 0 6 6l5-5 1.5 1.5L17 14.5 18.5 16 22 12.5 19.5 10l2-2-0.5-0.5z"/></svg>
+                                    <span>Clave</span>
+                                </button>
+
+                                {% if u.id == session.get('user_id') %}
+                                    <span class="badge badge-neutral-subtle" title="Usuario en sesión activa" style="font-size: 0.72rem; padding: 3px 6px;">En Sesión</span>
+                                {% else %}
+                                    <!-- Elegir Rol en Modal Limpio -->
+                                    <button type="button" class="btn btn-small btn-secondary btn-user-action"
+                                            onclick="openRoleSelectionModal(this)"
+                                            data-id="{{ u.id }}"
+                                            data-username="{{ u.username }}"
+                                            data-nombre="{% if u.nombres or u.apellidos %}{{ u.nombres or '' }} {{ u.apellidos or '' }}{% else %}@{{ u.username }}{% endif %}"
+                                            data-rol="{{ u.rol }}"
+                                            title="Cambiar rol entre Lector y Administrador">
+                                        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                                        <span>Rol</span>
+                                    </button>
+
+                                    <!-- Eliminar Perfil con Modal Personalizado -->
+                                    <button type="button" class="btn btn-small btn-danger btn-user-action"
+                                            onclick="openDeleteModal(this)"
+                                            data-action="{{ url_for('web.admin_eliminar_usuario', id=u.id) }}"
+                                            data-title="el perfil del usuario @{{ u.username }}"
+                                            title="Eliminar usuario permanentemente"
+                                            style="padding: 4px 7px !important;">
+                                        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginador de Usuarios -->
+        <div id="usersPaginationBar" style="padding: 16px 20px; background: #FAFAFC; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div id="usersInfoLabel" style="font-size: 0.86rem; color: var(--text-muted); font-weight: 500;">
+                Mostrando 1 a 10 de {{ users|length }} usuarios
+            </div>
+            <div id="usersPaginationControls" class="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
+                <!-- Botones generados dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     PESTAÑA 4: CONFIGURACIÓN DE POLÍTICAS DE PRÉSTAMO Y DEVOLUCIÓN
+     ========================================================================= -->
+<div id="tab-configuracion" class="admin-tab-pane" style="display: none;">
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start;">
+        
+        <!-- Tarjeta Principal del Formulario de Políticas -->
+        <div class="card" style="margin: 0; padding: 28px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); border-radius: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <div style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    ⚙️
+                </div>
+                <div>
+                    <h3 style="font-size: 1.3rem; color: var(--primary-dark); font-weight: 800; margin: 0;">
+                        Parámetros Globales de Préstamo y Devolución
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin: 2px 0 0;">
+                        Modifica en caliente las reglas operativas de la biblioteca sin reiniciar el servidor.
+                    </p>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0 24px;">
+
+            <form action="{{ url_for('web.actualizar_configuracion') }}" method="POST">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 24px;">
+                    
+                    <!-- Campo 1: Límite de libros en préstamo -->
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px;">
+                        <label for="limite_libros_input" style="display: block; font-weight: 700; color: var(--primary-dark); font-size: 0.96rem; margin-bottom: 6px;">
+                            📚 Límite de Libros Simultáneos
+                        </label>
+                        <p style="font-size: 0.82rem; color: #64748B; margin: 0 0 14px; line-height: 1.4;">
+                            Cantidad máxima de libros que un lector puede tener en préstamo activo a la vez.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="limite_libros_input" name="limite_libros_prestamo" 
+                                   min="1" max="50" value="{{ limite_libros }}" required
+                                   style="width: 110px; padding: 10px 14px; font-size: 1.25rem; font-weight: 800; text-align: center; border-radius: 8px; border: 2px solid var(--primary-color); background: white; color: var(--primary-dark);">
+                            <span style="font-size: 0.88rem; color: #475569; font-weight: 600;">ejemplares por lector</span>
+                        </div>
+                        <small style="display: block; font-size: 0.76rem; color: #94A3B8; margin-top: 8px;">
+                            (Rango recomendado: 1 a 10 libros)
+                        </small>
+                    </div>
+
+                    <!-- Campo 2: Plazo de devolución en días -->
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px;">
+                        <label for="dias_plazo_input" style="display: block; font-weight: 700; color: var(--primary-dark); font-size: 0.96rem; margin-bottom: 6px;">
+                            ⏱️ Plazo de Devolución (Días)
+                        </label>
+                        <p style="font-size: 0.82rem; color: #64748B; margin: 0 0 14px; line-height: 1.4;">
+                            Período máximo permitido para lectura. Al superar este plazo, el préstamo entra en alerta de mora.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="dias_plazo_input" name="dias_plazo_devolucion" 
+                                   min="1" max="365" value="{{ dias_plazo }}" required
+                                   style="width: 110px; padding: 10px 14px; font-size: 1.25rem; font-weight: 800; text-align: center; border-radius: 8px; border: 2px solid #059669; background: white; color: #065F46;">
+                            <span style="font-size: 0.88rem; color: #475569; font-weight: 600;">días naturales</span>
+                        </div>
+                        <small style="display: block; font-size: 0.76rem; color: #94A3B8; margin-top: 8px;">
+                            (Rango sugerido: 7, 14, 21 o 30 días)
+                        </small>
+                    </div>
+
+                </div>
+
+                <!-- Botón de Envío -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center; padding-top: 10px;">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 26px; font-size: 0.98rem; font-weight: 700; border-radius: 9px; box-shadow: 0 4px 14px rgba(37,99,235,0.3); display: inline-flex; align-items: center; gap: 8px;">
+                        <svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Guardar y Aplicar Parámetros
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Columna Lateral: Estado y Resumen Operativo -->
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="card" style="margin: 0; padding: 22px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); border-radius: 14px; background: white;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.04em;">
+                    Políticas Activas en Vivo
+                </h4>
+                
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F1F5F9;">
+                        <span style="font-size: 0.86rem; color: var(--text-muted);">Límite por lector:</span>
+                        <span class="badge" style="font-size: 0.84rem; background: var(--primary-light); color: var(--primary-dark); font-weight: 800;">
+                            {{ limite_libros }} libros
+                        </span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #F1F5F9;">
+                        <span style="font-size: 0.86rem; color: var(--text-muted);">Plazo de devolución:</span>
+                        <span class="badge" style="font-size: 0.84rem; background: #ECFDF5; color: #065F46; font-weight: 800;">
+                            {{ dias_plazo }} días
+                        </span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.86rem; color: var(--text-muted);">Préstamos en mora:</span>
+                        {% if metricas.total_prestamos_mora > 0 %}
+                            <span class="badge" style="font-size: 0.84rem; background: #FEE2E2; color: #B91C1C; font-weight: 800;">
+                                {{ metricas.total_prestamos_mora }} préstamos
+                            </span>
+                        {% else %}
+                            <span class="badge" style="font-size: 0.84rem; background: #F1F5F9; color: #475569;">
+                                {{ metricas.total_prestamos_mora }} préstamos
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ficha informativa para el evaluador -->
+            <div class="card" style="margin: 0; padding: 20px; border: 1px solid #E0E7FF; background: #F8FAFC; border-radius: 14px;">
+                <div style="font-size: 0.86rem; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                    💡 Impacto Transaccional
+                </div>
+                <p style="font-size: 0.8rem; color: #475569; line-height: 1.5; margin: 0;">
+                    Al cambiar estos valores, la base de datos actualiza la tabla relacional de configuración. Automáticamente, los formularios de préstamo bloquearán a los usuarios que alcancen el nuevo tope, y la bitácora de mora recalculará los días de atraso en tiempo real.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- =========================================================================
+     DATALISTS PARA AUTOCOMPLETADO INTELIGENTE (GÉNERO, AUTORES, EDICIÓN - Req 4)
+     ========================================================================= -->
+<datalist id="datalist_generos">
+    {% for g in generos_disponibles %}
+        <option value="{{ g }}"></option>
+    {% endfor %}
+</datalist>
+
+<datalist id="datalist_autores">
+    {% for a in autores_disponibles %}
+        <option value="{{ a }}"></option>
+    {% endfor %}
+</datalist>
+
+<datalist id="datalist_ediciones">
+    {% for e in ediciones_disponibles %}
+        <option value="{{ e }}"></option>
+    {% endfor %}
+</datalist>
+
+<!-- =========================================================================
+     MODAL 1: CREAR NUEVO USUARIO / PERFIL (ADMINISTRADOR)
+     ========================================================================= -->
+<div id="createUserModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; position: relative;">
+        <span class="close-modal" onclick="closeCreateUserModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--primary-dark); font-weight: 700;">Crear Nuevo Perfil de Usuario</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Registra una cuenta de lector común o un nuevo administrador en el sistema.</p>
+        
+        <form action="{{ url_for('web.admin_crear_usuario') }}" method="POST">
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="create_username">Nombre de Usuario *</label>
+                    <input type="text" id="create_username" name="username" required placeholder="Ej. lector1">
+                </div>
+                <div style="flex: 1;">
+                    <label for="create_password">Contraseña Inicial *</label>
+                    <input type="password" id="create_password" name="password" required placeholder="Clave de acceso">
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="create_nombres">Nombres</label>
+                    <input type="text" id="create_nombres" name="nombres" placeholder="Ej. Carlos">
+                </div>
+                <div style="flex: 1;">
+                    <label for="create_apellidos">Apellidos</label>
+                    <input type="text" id="create_apellidos" name="apellidos" placeholder="Ej. Andrade">
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="create_cedula">Cédula de Identidad (10 dígitos)</label>
+                    <input type="text" id="create_cedula" name="cedula" 
+                           placeholder="Ej. 0923456789"
+                           maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                           title="Debe ingresar exactamente 10 dígitos numéricos">
+                </div>
+                <div style="flex: 1;">
+                    <label for="create_email">Correo Electrónico</label>
+                    <input type="email" id="create_email" name="email" placeholder="usuario@correo.com">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="create_rol">Rol Asignado *</label>
+                <select id="create_rol" name="rol" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <option value="usuario">Usuario Lector Común (Solo préstamos y lectura)</option>
+                    <option value="admin">Administrador (Acceso total al panel de gestión)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateUserModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear Perfil</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: EDITAR PERFIL DE USUARIO (ADMINISTRADOR)
+     ========================================================================= -->
+<div id="editUserModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; position: relative;">
+        <span class="close-modal" onclick="closeEditUserModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--primary-dark); font-weight: 700;">Editar Información de Usuario</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Modifica los datos personales o el rol asignado.</p>
+        
+        <form id="editUserForm" method="POST">
+            <div class="form-group">
+                <label>Nombre de Usuario</label>
+                <input type="text" id="edit_user_username" disabled style="background-color: #F1F5F9; color: var(--text-muted);">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="edit_user_nombres">Nombres</label>
+                    <input type="text" id="edit_user_nombres" name="nombres">
+                </div>
+                <div style="flex: 1;">
+                    <label for="edit_user_apellidos">Apellidos</label>
+                    <input type="text" id="edit_user_apellidos" name="apellidos">
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="edit_user_cedula">Cédula (10 dígitos)</label>
+                    <input type="text" id="edit_user_cedula" name="cedula"
+                           placeholder="Ej. 1723456789"
+                           maxlength="10" minlength="10" pattern="[0-9]{10}" inputmode="numeric"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                           title="Debe ingresar exactamente 10 dígitos numéricos">
+                </div>
+                <div style="flex: 1;">
+                    <label for="edit_user_email">Correo Electrónico</label>
+                    <input type="email" id="edit_user_email" name="email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="edit_user_rol">Rol Asignado *</label>
+                <select id="edit_user_rol" name="rol" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <option value="usuario">Usuario Lector Común</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <button type="button" class="btn btn-secondary" onclick="closeEditUserModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: RESTABLECER CONTRASEÑA
+     ========================================================================= -->
+<div id="resetPassModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 500px; position: relative;">
+        <span class="close-modal" onclick="closeResetPassModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--warning-color); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9 3 14a4.24 4.24 0 0 0 6 6l5-5 1.5 1.5L17 14.5 18.5 16 22 12.5 19.5 10l2-2-0.5-0.5z"/></svg>
+            Solucionar Problema de Acceso
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+            Asigna una nueva clave para el usuario <strong id="reset_user_label" style="color: var(--text-color);"></strong> si olvidó su contraseña.
+        </p>
+        
+        <form id="resetPassForm" method="POST">
+            <div class="form-group">
+                <label for="reset_nueva_password">Nueva Contraseña para el Usuario *</label>
+                <input type="password" id="reset_nueva_password" name="nueva_password" required placeholder="Ingresa la nueva clave (ej. 123456)">
+            </div>
+
+            <div style="background-color: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 0.85rem; color: #92400E;">
+                <em>Al guardar, la clave anterior será reemplazada y el usuario podrá iniciar sesión inmediatamente.</em>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeResetPassModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="background-color: var(--warning-color); border-color: var(--warning-color);">Restablecer Acceso</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 4: AÑADIR LIBRO AL CATÁLOGO (CON AUTOCOMPLETADO INTELIGENTE - Req 4)
+     ========================================================================= -->
+<div id="adminAddModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; position: relative;">
+        <span class="close-modal" onclick="closeAdminAddModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--primary-dark); font-weight: 700;">Añadir Nuevo Libro al Catálogo</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Registra una nueva obra en la base de datos de la biblioteca.</p>
+        
+        <form action="{{ url_for('web.add_book') }}" method="POST" class="book-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="admin_add_titulo">Título del Libro *</label>
+                <input type="text" id="admin_add_titulo" name="titulo" required placeholder="Ej. El Quijote de la Mancha">
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_add_autor">Autor(es) * <small style="font-weight: normal; color: var(--text-muted);">(Separados por coma si son varios)</small></label>
+                <input type="text" id="admin_add_autor" name="autor" list="datalist_autores" autocomplete="off" required placeholder="Ej. Gabriel García Márquez">
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="admin_add_genero">Género *</label>
+                    <input type="text" id="admin_add_genero" name="genero" list="datalist_generos" autocomplete="off" required placeholder="Ej. Novela Clásica">
+                </div>
+                <div style="flex: 1;">
+                    <label for="admin_add_anio">Año de Publicación *</label>
+                    <input type="number" id="admin_add_anio" name="anio" required placeholder="Ej. 1967">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="admin_add_edicion">Edición</label>
+                <input type="text" id="admin_add_edicion" name="edicion" list="datalist_ediciones" autocomplete="off" placeholder="Ej. Edición Conmemorativa">
+            </div>
+
+            <div class="form-group">
+                <label for="admin_add_resumen">Resumen o Sinopsis Detallada</label>
+                <textarea id="admin_add_resumen" name="resumen" rows="4" placeholder="Argumento y contexto de la obra..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group" style="flex: 1; border: 1px dashed var(--border-color); padding: 15px; border-radius: 8px; background-color: #F8FAFC;">
+                    <label for="admin_add_portada">Portada (Imagen)</label>
+                    <input type="file" id="admin_add_portada" name="portada_file" accept="image/*" class="file-input" style="width: 100%;">
+                </div>
+                <div class="form-group" style="flex: 1; border: 1px dashed var(--border-color); padding: 15px; border-radius: 8px; background-color: #F8FAFC;">
+                    <label for="admin_add_pdf">Archivo PDF (Lectura Digital)</label>
+                    <input type="file" id="admin_add_pdf" name="pdf_file" accept=".pdf" class="file-input" style="width: 100%;">
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeAdminAddModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Registrar Libro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 5: EDITAR LIBRO
+     ========================================================================= -->
+<div id="adminEditModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; position: relative;">
+        <span class="close-modal" onclick="closeAdminEditModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--primary-dark); font-weight: 700;">Editar Libro</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Modifica los campos del libro seleccionado.</p>
+        
+        <form id="adminEditForm" method="POST" class="book-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="admin_edit_titulo">Título del Libro *</label>
+                <input type="text" id="admin_edit_titulo" name="titulo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="admin_edit_autor">Autor(es) * <small style="font-weight: normal; color: var(--text-muted);">(Separados por coma si son varios)</small></label>
+                <input type="text" id="admin_edit_autor" name="autor" list="datalist_autores" autocomplete="off" required>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label for="admin_edit_genero">Género *</label>
+                    <input type="text" id="admin_edit_genero" name="genero" list="datalist_generos" autocomplete="off" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="admin_edit_anio">Año de Publicación *</label>
+                    <input type="number" id="admin_edit_anio" name="anio" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="admin_edit_edicion">Edición</label>
+                <input type="text" id="admin_edit_edicion" name="edicion" list="datalist_ediciones" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="admin_edit_resumen">Resumen o Sinopsis</label>
+                <textarea id="admin_edit_resumen" name="resumen" rows="4"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group" style="flex: 1; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background-color: #F8FAFC;">
+                    <label for="admin_edit_portada">Cambiar Portada</label>
+                    <input type="file" id="admin_edit_portada" name="portada_file" accept="image/*" class="file-input" style="width: 100%;">
+                    <input type="hidden" id="admin_current_portada" name="current_portada">
+                    <small id="admin_current_portada_display" style="display:block; margin-top:8px; color:var(--text-muted); font-size: 0.8rem;"></small>
+                </div>
+                <div class="form-group" style="flex: 1; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background-color: #F8FAFC;">
+                    <label for="admin_edit_pdf">Cambiar PDF</label>
+                    <input type="file" id="admin_edit_pdf" name="pdf_file" accept=".pdf" class="file-input" style="width: 100%;">
+                    <input type="hidden" id="admin_current_pdf" name="current_pdf">
+                    <small id="admin_current_pdf_display" style="display:block; margin-top:8px; color:var(--text-muted); font-size: 0.8rem;"></small>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="closeAdminEditModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 6: ELECCIÓN DE ROL LIMPIA Y SEGURA (Req 3)
+     ========================================================================= -->
+<div id="roleSelectionModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 480px; position: relative;">
+        <span class="close-modal" onclick="closeRoleSelectionModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+        <h2 style="margin-bottom: 6px; color: var(--primary-dark); font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <svg class="icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Asignar Rol de Acceso
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+            Selecciona el nivel de privilegios para <strong id="role_modal_user_name" style="color: var(--text-color);"></strong> (<span id="role_modal_user_login" style="font-family: monospace;"></span>):
+        </p>
+
+        <form id="roleSelectionForm" method="POST">
+            <!-- Opción 1: Lector Común -->
+            <label class="role-option-card" id="option_card_usuario" onclick="selectRoleOption('usuario')">
+                <input type="radio" name="rol" value="usuario" id="role_radio_usuario">
+                <div>
+                    <div style="font-weight: 700; color: var(--primary-dark); font-size: 0.98rem; display: flex; align-items: center; gap: 6px;">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Lector Común (Usuario)
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                        Acceso a catálogo, estantería personal, préstamo de hasta 3 libros simultáneos y lector digital integrado.
+                    </div>
+                </div>
+            </label>
+
+            <!-- Opción 2: Administrador -->
+            <label class="role-option-card" id="option_card_admin" onclick="selectRoleOption('admin')">
+                <input type="radio" name="rol" value="admin" id="role_radio_admin">
+                <div>
+                    <div style="font-weight: 700; color: #B45309; font-size: 0.98rem; display: flex; align-items: center; gap: 6px;">
+                        <svg class="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Administrador del Sistema
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                        Acceso total al panel administrativo, inventario, control global de préstamos, gestión de usuarios y configuraciones.
+                    </div>
+                </div>
+            </label>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                <button type="button" class="btn btn-secondary" onclick="closeRoleSelectionModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Rol</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 7: CONFIRMAR ELIMINACIÓN ELEGANTE (SIN CONFIRM NATIVO - Req 3)
+     ========================================================================= -->
+<div id="deleteConfirmModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content card" style="width: 100%; max-width: 480px; position: relative; text-align: center; padding: 30px;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background-color: #FEE2E2; color: var(--danger-color); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <svg class="icon-svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+            </svg>
+        </div>
+        <h2 style="font-size: 1.35rem; color: var(--primary-dark); font-weight: 800; margin-bottom: 8px;">¿Confirmas la eliminación?</h2>
+        <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 22px;">
+            Estás a punto de eliminar permanentemente <strong id="delete_item_title" style="color: var(--text-color);"></strong> del sistema. Esta acción no se puede deshacer.
+        </p>
+
+        <form id="deleteConfirmForm" method="POST" style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" style="min-width: 110px;">Cancelar</button>
+            <button type="submit" class="btn btn-danger" style="min-width: 160px; font-weight: 700;">Sí, Eliminar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // =========================================================================
+    // 1. GESTIÓN DE PESTAÑAS
+    // =========================================================================
+    function showAdminTab(tabId, btn) {
+        var panes = document.querySelectorAll('.admin-tab-pane');
+        panes.forEach(function(pane) {
+            pane.style.display = 'none';
+        });
+
+        var tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(function(button) {
+            button.classList.remove('active');
+        });
+
+        document.getElementById(tabId).style.display = 'block';
+        btn.classList.add('active');
+    }
+
+    // =========================================================================
+    // 2. MODALES ADMINISTRATIVOS
+    // =========================================================================
+    function openCreateUserModal() {
+        document.getElementById('createUserModal').style.display = 'flex';
+    }
+    function closeCreateUserModal() {
+        document.getElementById('createUserModal').style.display = 'none';
+    }
+
+    function openEditUserModal(btn) {
+        var id = btn.getAttribute('data-id');
+        document.getElementById('edit_user_username').value = '@' + btn.getAttribute('data-username');
+        document.getElementById('edit_user_nombres').value = btn.getAttribute('data-nombres') || '';
+        document.getElementById('edit_user_apellidos').value = btn.getAttribute('data-apellidos') || '';
+        document.getElementById('edit_user_cedula').value = btn.getAttribute('data-cedula') || '';
+        document.getElementById('edit_user_email').value = btn.getAttribute('data-email') || '';
+        document.getElementById('edit_user_rol').value = btn.getAttribute('data-rol') || 'usuario';
+        
+        document.getElementById('editUserForm').action = '/admin/usuario/' + id + '/editar';
+        document.getElementById('editUserModal').style.display = 'flex';
+    }
+    function closeEditUserModal() {
+        document.getElementById('editUserModal').style.display = 'none';
+    }
+
+    function openResetPassModal(btn) {
+        var id = btn.getAttribute('data-id');
+        var username = btn.getAttribute('data-username');
+        document.getElementById('reset_user_label').innerText = '@' + username;
+        document.getElementById('reset_nueva_password').value = '';
+        document.getElementById('resetPassForm').action = '/admin/usuario/' + id + '/reset-password';
+        document.getElementById('resetPassModal').style.display = 'flex';
+    }
+    function closeResetPassModal() {
+        document.getElementById('resetPassModal').style.display = 'none';
+    }
+
+    function openAdminAddModal() {
+        document.getElementById('adminAddModal').style.display = 'flex';
+    }
+    function closeAdminAddModal() {
+        document.getElementById('adminAddModal').style.display = 'none';
+    }
+
+    function openAdminEditModal(btn) {
+        document.getElementById('admin_edit_titulo').value = btn.getAttribute('data-titulo') || '';
+        document.getElementById('admin_edit_autor').value = btn.getAttribute('data-autor') || '';
+        document.getElementById('admin_edit_genero').value = btn.getAttribute('data-genero') || '';
+        document.getElementById('admin_edit_anio').value = btn.getAttribute('data-anio') || '';
+        document.getElementById('admin_edit_edicion').value = btn.getAttribute('data-edicion') || '';
+        document.getElementById('admin_edit_resumen').value = btn.getAttribute('data-resumen') || '';
+        
+        var currentPdf = btn.getAttribute('data-pdf');
+        document.getElementById('admin_current_pdf').value = currentPdf || '';
+        document.getElementById('admin_current_pdf_display').innerText = currentPdf ? ("PDF actual: " + currentPdf) : "No hay PDF registrado";
+
+        var currentPortada = btn.getAttribute('data-portada');
+        document.getElementById('admin_current_portada').value = currentPortada || '';
+        document.getElementById('admin_current_portada_display').innerText = currentPortada ? ("Portada actual: " + currentPortada) : "No hay portada registrada";
+        
+        var id = btn.getAttribute('data-id');
+        document.getElementById('adminEditForm').action = '/update/' + id;
+        document.getElementById('adminEditModal').style.display = 'flex';
+    }
+    function closeAdminEditModal() {
+        document.getElementById('adminEditModal').style.display = 'none';
+    }
+
+    // Modal de Selección de Rol (Req 3)
+    function openRoleSelectionModal(btnOrId, username, fullName, currentRole) {
+        var id, uName, fName, cRole;
+        if (typeof btnOrId === 'object' && btnOrId !== null) {
+            id = btnOrId.getAttribute('data-id');
+            uName = btnOrId.getAttribute('data-username');
+            fName = btnOrId.getAttribute('data-nombre') || ('@' + uName);
+            cRole = btnOrId.getAttribute('data-rol') || 'usuario';
+        } else {
+            id = btnOrId;
+            uName = username;
+            fName = fullName || ('@' + uName);
+            cRole = currentRole || 'usuario';
+        }
+
+        document.getElementById('role_modal_user_name').innerText = fName.trim();
+        document.getElementById('role_modal_user_login').innerText = '@' + uName;
+        
+        selectRoleOption(cRole === 'admin' ? 'admin' : 'usuario');
+        document.getElementById('roleSelectionForm').action = '/admin/usuario/' + id + '/cambiar-rol';
+        document.getElementById('roleSelectionModal').style.display = 'flex';
+    }
+    function selectRoleOption(role) {
+        var cardUsuario = document.getElementById('option_card_usuario');
+        var cardAdmin = document.getElementById('option_card_admin');
+        var radioUsuario = document.getElementById('role_radio_usuario');
+        var radioAdmin = document.getElementById('role_radio_admin');
+
+        if (role === 'admin') {
+            radioAdmin.checked = true;
+            cardAdmin.classList.add('selected');
+            cardUsuario.classList.remove('selected');
+        } else {
+            radioUsuario.checked = true;
+            cardUsuario.classList.add('selected');
+            cardAdmin.classList.remove('selected');
+        }
+    }
+    function closeRoleSelectionModal() {
+        document.getElementById('roleSelectionModal').style.display = 'none';
+    }
+
+    // Modal de Confirmación de Eliminación (Req 3)
+    function openDeleteModal(btnOrAction, itemTitle, type) {
+        var actionUrl, title;
+        if (typeof btnOrAction === 'object' && btnOrAction !== null) {
+            actionUrl = btnOrAction.getAttribute('data-action');
+            title = btnOrAction.getAttribute('data-title');
+        } else {
+            actionUrl = btnOrAction;
+            title = itemTitle;
+        }
+
+        document.getElementById('delete_item_title').innerText = title;
+        document.getElementById('deleteConfirmForm').action = actionUrl;
+        document.getElementById('deleteConfirmModal').style.display = 'flex';
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteConfirmModal').style.display = 'none';
+    }
+
+    // Cerrar modales con clic fuera
+    window.onclick = function(event) {
+        var modals = [
+            'adminAddModal', 'adminEditModal', 'createUserModal',
+            'editUserModal', 'resetPassModal', 'roleSelectionModal', 'deleteConfirmModal'
+        ];
+        modals.forEach(function(mId) {
+            var modal = document.getElementById(mId);
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+    };
+
+    // =========================================================================
+    // 3. MOTOR UNIVERSAL DE PAGINACIÓN, BÚSQUEDA Y ORDENAMIENTO (Req 3 & Req 6)
+    // =========================================================================
+
+    // A. CONTROLADOR DE LIBROS
+    var booksState = {
+        page: 1,
+        perPage: 10,
+        sortCol: 0,
+        sortAsc: false
+    };
+
+    function getBookRows() {
+        return Array.from(document.querySelectorAll('#booksTableBody tr.book-row'));
+    }
+
+    function renderBooks() {
+        var query = document.getElementById('searchBooksInput').value.toLowerCase().trim();
+        var allRows = getBookRows();
+        
+        // 1. Filtrado
+        var filteredRows = allRows.filter(function(row) {
+            if (!query) return true;
+            var text = row.innerText.toLowerCase();
+            return text.includes(query);
+        });
+
+        // 2. Paginación
+        var total = filteredRows.length;
+        var totalPages = Math.max(1, Math.ceil(total / booksState.perPage));
+        if (booksState.page > totalPages) booksState.page = totalPages;
+        if (booksState.page < 1) booksState.page = 1;
+
+        var startIdx = (booksState.page - 1) * booksState.perPage;
+        var endIdx = startIdx + booksState.perPage;
+
+        allRows.forEach(function(row) { row.style.display = 'none'; });
+        filteredRows.forEach(function(row, idx) {
+            if (idx >= startIdx && idx < endIdx) {
+                row.style.display = '';
+            }
+        });
+
+        // 3. Actualizar etiqueta y botones
+        var info = document.getElementById('booksInfoLabel');
+        if (total === 0) {
+            info.innerText = 'No se encontraron libros que coincidan';
+        } else {
+            var showingTo = Math.min(endIdx, total);
+            info.innerText = 'Mostrando ' + (startIdx + 1) + ' a ' + showingTo + ' de ' + total + ' libros';
+        }
+
+        renderPaginationControls('booksPaginationControls', booksState.page, totalPages, function(newPage) {
+            booksState.page = newPage;
+            renderBooks();
+        });
+    }
+
+    function filterBooksTable() {
+        booksState.page = 1;
+        renderBooks();
+    }
+
+    function sortBooksByCol(colIndex) {
+        var tbody = document.getElementById('booksTableBody');
+        var rows = getBookRows();
+        booksState.sortAsc = (booksState.sortCol === colIndex) ? !booksState.sortAsc : true;
+        booksState.sortCol = colIndex;
+
+        rows.sort(function(a, b) {
+            var valA = '', valB = '';
+            if (colIndex === 1) {
+                valA = a.getAttribute('data-titulo') || '';
+                valB = b.getAttribute('data-titulo') || '';
+            } else if (colIndex === 2) {
+                valA = a.getAttribute('data-genero') || '';
+                valB = b.getAttribute('data-genero') || '';
+            } else if (colIndex === 3) {
+                valA = parseInt(a.getAttribute('data-anio')) || 0;
+                valB = parseInt(b.getAttribute('data-anio')) || 0;
+                return booksState.sortAsc ? (valA - valB) : (valB - valA);
+            } else if (colIndex === 4) {
+                valA = parseInt(a.getAttribute('data-prestamos')) || 0;
+                valB = parseInt(b.getAttribute('data-prestamos')) || 0;
+                return booksState.sortAsc ? (valA - valB) : (valB - valA);
+            }
+            return booksState.sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        renderBooks();
+    }
+
+    function sortBooksByDropdown() {
+        var sel = document.getElementById('sortBooksSelect').value;
+        var tbody = document.getElementById('booksTableBody');
+        var rows = getBookRows();
+
+        rows.sort(function(a, b) {
+            if (sel === 'id_desc') return parseInt(b.getAttribute('data-id')) - parseInt(a.getAttribute('data-id'));
+            if (sel === 'id_asc') return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
+            if (sel === 'titulo_asc') return (a.getAttribute('data-titulo') || '').localeCompare(b.getAttribute('data-titulo') || '');
+            if (sel === 'titulo_desc') return (b.getAttribute('data-titulo') || '').localeCompare(a.getAttribute('data-titulo') || '');
+            if (sel === 'autor_asc') return (a.getAttribute('data-autor') || '').localeCompare(b.getAttribute('data-autor') || '');
+            if (sel === 'prestamos_desc') return parseInt(b.getAttribute('data-prestamos')) - parseInt(a.getAttribute('data-prestamos'));
+            return 0;
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        booksState.page = 1;
+        renderBooks();
+    }
+
+    // B. CONTROLADOR DE PRÉSTAMOS (Req 6)
+    var loansState = {
+        page: 1,
+        perPage: 10,
+        sortCol: -1,
+        sortAsc: true
+    };
+
+    function getLoanRows() {
+        return Array.from(document.querySelectorAll('#loansTableBody tr.loan-row'));
+    }
+
+    function renderLoans() {
+        var query = document.getElementById('searchLoansInput').value.toLowerCase().trim();
+        var statusFilter = document.getElementById('filterLoansStatusSelect').value;
+        var allRows = getLoanRows();
+
+        // 1. Filtrado
+        var filteredRows = allRows.filter(function(row) {
+            var matchesText = !query || row.innerText.toLowerCase().includes(query);
+            var matchesStatus = !statusFilter || row.getAttribute('data-estado') === statusFilter;
+            return matchesText && matchesStatus;
+        });
+
+        // 2. Paginación
+        var total = filteredRows.length;
+        var totalPages = Math.max(1, Math.ceil(total / loansState.perPage));
+        if (loansState.page > totalPages) loansState.page = totalPages;
+        if (loansState.page < 1) loansState.page = 1;
+
+        var startIdx = (loansState.page - 1) * loansState.perPage;
+        var endIdx = startIdx + loansState.perPage;
+
+        allRows.forEach(function(row) { row.style.display = 'none'; });
+        filteredRows.forEach(function(row, idx) {
+            if (idx >= startIdx && idx < endIdx) {
+                row.style.display = '';
+            }
+        });
+
+        // 3. Etiqueta y controles
+        var info = document.getElementById('loansInfoLabel');
+        if (total === 0) {
+            info.innerText = 'No se encontraron registros de préstamos';
+        } else {
+            var showingTo = Math.min(endIdx, total);
+            info.innerText = 'Mostrando ' + (startIdx + 1) + ' a ' + showingTo + ' de ' + total + ' préstamos';
+        }
+
+        renderPaginationControls('loansPaginationControls', loansState.page, totalPages, function(newPage) {
+            loansState.page = newPage;
+            renderLoans();
+        });
+    }
+
+    function filterLoansTable() {
+        loansState.page = 1;
+        renderLoans();
+    }
+
+    function sortLoansByCol(colIndex) {
+        var tbody = document.getElementById('loansTableBody');
+        var rows = getLoanRows();
+        loansState.sortAsc = (loansState.sortCol === colIndex) ? !loansState.sortAsc : true;
+        loansState.sortCol = colIndex;
+
+        rows.sort(function(a, b) {
+            var valA = '', valB = '';
+            if (colIndex === 0) { // ID
+                valA = parseInt(a.getAttribute('data-id')) || 0;
+                valB = parseInt(b.getAttribute('data-id')) || 0;
+                return loansState.sortAsc ? (valA - valB) : (valB - valA);
+            } else if (colIndex === 1) { // Libro
+                valA = a.getAttribute('data-libro') || '';
+                valB = b.getAttribute('data-libro') || '';
+            } else if (colIndex === 2) { // Usuario
+                valA = a.getAttribute('data-usuario') || '';
+                valB = b.getAttribute('data-usuario') || '';
+            } else if (colIndex === 3) { // Cédula
+                valA = a.getAttribute('data-cedula') || '';
+                valB = b.getAttribute('data-cedula') || '';
+            } else if (colIndex === 4) { // Fecha Préstamo
+                valA = a.getAttribute('data-fecha-prestamo') || '';
+                valB = b.getAttribute('data-fecha-prestamo') || '';
+            } else if (colIndex === 5) { // Fecha Devolución
+                valA = a.getAttribute('data-fecha-devolucion') || '';
+                valB = b.getAttribute('data-fecha-devolucion') || '';
+            } else if (colIndex === 6) { // Estado
+                valA = a.getAttribute('data-estado') || '';
+                valB = b.getAttribute('data-estado') || '';
+            }
+            return loansState.sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        renderLoans();
+    }
+
+    function sortLoansByDropdown() {
+        var sel = document.getElementById('sortLoansSelect').value;
+        var tbody = document.getElementById('loansTableBody');
+        var rows = getLoanRows();
+
+        rows.sort(function(a, b) {
+            if (sel === 'prestamo_desc') {
+                return (b.getAttribute('data-fecha-prestamo') || '').localeCompare(a.getAttribute('data-fecha-prestamo') || '');
+            } else if (sel === 'prestamo_asc') {
+                return (a.getAttribute('data-fecha-prestamo') || '').localeCompare(b.getAttribute('data-fecha-prestamo') || '');
+            } else if (sel === 'devolucion_desc') {
+                return (b.getAttribute('data-fecha-devolucion') || '').localeCompare(a.getAttribute('data-fecha-devolucion') || '');
+            } else if (sel === 'devolucion_asc') {
+                return (a.getAttribute('data-fecha-devolucion') || '').localeCompare(b.getAttribute('data-fecha-devolucion') || '');
+            } else if (sel === 'libro_asc') {
+                return (a.getAttribute('data-libro') || '').localeCompare(b.getAttribute('data-libro') || '');
+            } else if (sel === 'usuario_asc') {
+                return (a.getAttribute('data-usuario') || '').localeCompare(b.getAttribute('data-usuario') || '');
+            } else if (sel === 'estado_activo') {
+                var isActA = a.getAttribute('data-estado') === 'Activo' ? 1 : 0;
+                var isActB = b.getAttribute('data-estado') === 'Activo' ? 1 : 0;
+                return isActB - isActA;
+            }
+            return 0;
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        loansState.page = 1;
+        renderLoans();
+    }
+
+    // C. CONTROLADOR DE USUARIOS (Req 3)
+    var usersState = {
+        page: 1,
+        perPage: 10,
+        sortCol: -1,
+        sortAsc: true
+    };
+
+    function getUserRows() {
+        return Array.from(document.querySelectorAll('#usersTableBody tr.user-row'));
+    }
+
+    function renderUsers() {
+        var query = document.getElementById('searchUsersInput').value.toLowerCase().trim();
+        var roleFilter = document.getElementById('filterUsersRoleSelect').value;
+        var allRows = getUserRows();
+
+        // 1. Filtrado
+        var filteredRows = allRows.filter(function(row) {
+            var matchesText = !query || row.innerText.toLowerCase().includes(query);
+            var matchesRole = !roleFilter || row.getAttribute('data-rol') === roleFilter;
+            return matchesText && matchesRole;
+        });
+
+        // 2. Paginación
+        var total = filteredRows.length;
+        var totalPages = Math.max(1, Math.ceil(total / usersState.perPage));
+        if (usersState.page > totalPages) usersState.page = totalPages;
+        if (usersState.page < 1) usersState.page = 1;
+
+        var startIdx = (usersState.page - 1) * usersState.perPage;
+        var endIdx = startIdx + usersState.perPage;
+
+        allRows.forEach(function(row) { row.style.display = 'none'; });
+        filteredRows.forEach(function(row, idx) {
+            if (idx >= startIdx && idx < endIdx) {
+                row.style.display = '';
+            }
+        });
+
+        // 3. Etiqueta y controles
+        var info = document.getElementById('usersInfoLabel');
+        if (total === 0) {
+            info.innerText = 'No se encontraron usuarios';
+        } else {
+            var showingTo = Math.min(endIdx, total);
+            info.innerText = 'Mostrando ' + (startIdx + 1) + ' a ' + showingTo + ' de ' + total + ' usuarios';
+        }
+
+        renderPaginationControls('usersPaginationControls', usersState.page, totalPages, function(newPage) {
+            usersState.page = newPage;
+            renderUsers();
+        });
+    }
+
+    function filterUsersTable() {
+        usersState.page = 1;
+        renderUsers();
+    }
+
+    function sortUsersByCol(colIndex) {
+        var tbody = document.getElementById('usersTableBody');
+        var rows = getUserRows();
+        usersState.sortAsc = (usersState.sortCol === colIndex) ? !usersState.sortAsc : true;
+        usersState.sortCol = colIndex;
+
+        rows.sort(function(a, b) {
+            var valA = '', valB = '';
+            if (colIndex === 0) { // Usuario
+                valA = a.getAttribute('data-username') || '';
+                valB = b.getAttribute('data-username') || '';
+            } else if (colIndex === 1) { // Cédula
+                valA = a.getAttribute('data-cedula') || '';
+                valB = b.getAttribute('data-cedula') || '';
+            } else if (colIndex === 2) { // Rol
+                valA = a.getAttribute('data-rol') || '';
+                valB = b.getAttribute('data-rol') || '';
+            } else if (colIndex === 3) { // Préstamos
+                valA = parseInt(a.getAttribute('data-prestamos')) || 0;
+                valB = parseInt(b.getAttribute('data-prestamos')) || 0;
+                return usersState.sortAsc ? (valA - valB) : (valB - valA);
+            }
+            return usersState.sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        renderUsers();
+    }
+
+    function sortUsersByDropdown() {
+        var sel = document.getElementById('sortUsersSelect').value;
+        var tbody = document.getElementById('usersTableBody');
+        var rows = getUserRows();
+
+        rows.sort(function(a, b) {
+            if (sel === 'id_asc') return parseInt(a.getAttribute('data-id')) - parseInt(b.getAttribute('data-id'));
+            if (sel === 'id_desc') return parseInt(b.getAttribute('data-id')) - parseInt(a.getAttribute('data-id'));
+            if (sel === 'nombre_asc') return (a.getAttribute('data-username') || '').localeCompare(b.getAttribute('data-username') || '');
+            if (sel === 'prestamos_desc') return parseInt(b.getAttribute('data-prestamos')) - parseInt(a.getAttribute('data-prestamos'));
+            return 0;
+        });
+
+        rows.forEach(function(r) { tbody.appendChild(r); });
+        usersState.page = 1;
+        renderUsers();
+    }
+
+    // D. RENDERIZADOR UNIVERSAL DE BOTONES DE PAGINACIÓN
+    function renderPaginationControls(containerId, currentPage, totalPages, onPageChange) {
+        var container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Botón Anterior
+        var prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn' + (currentPage === 1 ? ' disabled' : '');
+        prevBtn.innerHTML = '‹ Anterior';
+        prevBtn.onclick = function() {
+            if (currentPage > 1) onPageChange(currentPage - 1);
+        };
+        container.appendChild(prevBtn);
+
+        // Rango de páginas a mostrar
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, currentPage + 2);
+
+        if (startPage > 1) {
+            var firstBtn = document.createElement('button');
+            firstBtn.className = 'pagination-btn';
+            firstBtn.innerText = '1';
+            firstBtn.onclick = function() { onPageChange(1); };
+            container.appendChild(firstBtn);
+
+            if (startPage > 2) {
+                var dots = document.createElement('span');
+                dots.innerText = '...';
+                dots.style.padding = '0 4px';
+                dots.style.color = 'var(--text-muted)';
+                container.appendChild(dots);
+            }
+        }
+
+        for (var p = startPage; p <= endPage; p++) {
+            var pBtn = document.createElement('button');
+            pBtn.className = 'pagination-btn' + (p === currentPage ? ' active' : '');
+            pBtn.innerText = p;
+            (function(pageNumber) {
+                pBtn.onclick = function() { onPageChange(pageNumber); };
+            })(p);
+            container.appendChild(pBtn);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                var dots = document.createElement('span');
+                dots.innerText = '...';
+                dots.style.padding = '0 4px';
+                dots.style.color = 'var(--text-muted)';
+                container.appendChild(dots);
+            }
+
+            var lastBtn = document.createElement('button');
+            lastBtn.className = 'pagination-btn';
+            lastBtn.innerText = totalPages;
+            lastBtn.onclick = function() { onPageChange(totalPages); };
+            container.appendChild(lastBtn);
+        }
+
+        // Botón Siguiente
+        var nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn' + (currentPage === totalPages ? ' disabled' : '');
+        nextBtn.innerHTML = 'Siguiente ›';
+        nextBtn.onclick = function() {
+            if (currentPage < totalPages) onPageChange(currentPage + 1);
+        };
+        container.appendChild(nextBtn);
+    }
+
+    // Inicializar renderizado de tablas al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        renderBooks();
+        renderLoans();
+        renderUsers();
+
+        // Si la URL contiene un hash como #tab-configuracion, activar esa pestaña automáticamente
+        if (window.location.hash) {
+            var targetTab = window.location.hash.substring(1);
+            var targetBtn = document.querySelector("button[onclick*='" + targetTab + "']");
+            if (targetBtn && document.getElementById(targetTab)) {
+                showAdminTab(targetTab, targetBtn);
+            }
+        }
+    });
+</script>
+{% endblock %}
